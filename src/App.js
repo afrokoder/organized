@@ -26,8 +26,6 @@ function App() {
         {todos.map((todo) => (
           <li>{todo}</li>
         ))}
-
-        <li></li>
         <li></li>
       </ul>
     </div>
