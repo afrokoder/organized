@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Todo from './Todo';
 import { Button, FormControl, InputLabel, Input } from '@material-ui/core';
 import './App.css';
+import { db } from './firebase';
 
 function App() {
-  const [todos, setTodos] = useState(['Bread', 'Tomatoes', 'Eggs']);
+  const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
+
+  useEffect(() => {
+    db.collection('todos').onSnapshot((snapshot) => {
+      setTodos(snapshot.docs.map((doc) => doc.data().todo));
+    });
+  }, []);
+
   const addTodo = (event) => {
     event.preventDefault(); //Will stop the page from refreshing
     setTodos([...todos, input]);
@@ -37,16 +46,12 @@ function App() {
         >
           Add ToDo
         </Button>
-        {/* <button type="submit" onClick={addTodo}>
-          Add ToDo
-        </button> */}
       </form>
 
       <ul>
         {todos.map((todo) => (
-          <li>{todo}</li>
+          <Todo text={todo} />
         ))}
-        <li></li>
       </ul>
     </div>
   );
