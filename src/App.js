@@ -3,25 +3,31 @@ import Todo from './Todo';
 import { Button, FormControl, InputLabel, Input } from '@material-ui/core';
 import './App.css';
 import { db } from './firebase';
+import firebase from 'firebase';
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    db.collection('todos').onSnapshot((snapshot) => {
-      setTodos(snapshot.docs.map((doc) => doc.data().todo));
-    });
+    db.collection('todos')
+      .orderBy('timestamp', 'desc')
+      .onSnapshot((snapshot) => {
+        setTodos(snapshot.docs.map((doc) => doc.data().todo));
+      });
   }, []);
 
   const addTodo = (event) => {
     event.preventDefault(); //Will stop the page from refreshing
-    setTodos([...todos, input]);
-    setInput('');
+    db.collection('todos').add({
+      todo: input,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    setInput(''); //clear
   };
   return (
     <div className="App">
-      <h1>Things To Buy / ToDo</h1>
+      <h1>Things To Buy / ToDo </h1>
 
       <form>
         <FormControl>
