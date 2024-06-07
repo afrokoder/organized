@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Todo from './Todo';
 import { Button, FormControl, InputLabel, Input } from '@material-ui/core';
 import './App.css';
+import { db } from './firebase';
+import firebase from 'firebase';
 
 function App() {
-  const [todos, setTodos] = useState(['Bread', 'Tomatoes', 'Eggs']);
+  const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
+
+  useEffect(() => {
+    db.collection('todos')
+      .orderBy('timestamp', 'desc')
+      .onSnapshot((snapshot) => {
+        setTodos(
+          snapshot.docs.map((doc) => ({ id: doc.id, todo: doc.data().todo }))
+        );
+      });
+  }, []);
+
   const addTodo = (event) => {
     event.preventDefault(); //Will stop the page from refreshing
-    setTodos([...todos, input]);
-    setInput('');
+    db.collection('todos').add({
+      todo: input,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    setInput(''); //clear
   };
   return (
     <div className="App">
-      <h1>Things To Buy / ToDo</h1>
+      <h1>Things To Buy / ToDo </h1>
 
       <form>
         <FormControl>
@@ -23,10 +40,6 @@ function App() {
           />
         </FormControl>
 
-        {/* <input
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-        /> */}
         <Button
           type="submit"
           disabled={!input}
@@ -37,16 +50,12 @@ function App() {
         >
           Add ToDo
         </Button>
-        {/* <button type="submit" onClick={addTodo}>
-          Add ToDo
-        </button> */}
       </form>
 
       <ul>
         {todos.map((todo) => (
-          <li>{todo}</li>
+          <Todo todo={todo} />
         ))}
-        <li></li>
       </ul>
     </div>
   );
